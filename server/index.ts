@@ -44,13 +44,14 @@ app.get(
         // combine support worker and visits
         const supportWorkerVisits: SupportWorkerVisit[] = filteredVisits.map(
           (visit) => ({
+            ...visit,
             name: supportWorker.name,
             contractedHours: supportWorker.contractedHours,
-            ...visit
+            avatar: supportWorker.avatar
           })
         )
 
-        res.json({ supportWorkerVisits })
+        res.json({ data: supportWorkerVisits })
       } else {
         res
           .status(404)
@@ -81,12 +82,13 @@ app.get('/getSupportWorkerVisits', (req: Request, res: Response) => {
         return workerVisits.map((visit) => ({
           ...visit,
           name: worker.name,
-          contractedHours: worker.contractedHours
+          contractedHours: worker.contractedHours,
+          avatar: worker.avatar
         }))
       }
     )
 
-    res.json({ supportWorkerVisits })
+    res.json({ data: supportWorkerVisits })
   } catch (error) {
     console.error(error)
     res.status(500).json({ error: 'Internal server error' })
