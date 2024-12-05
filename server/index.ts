@@ -1,4 +1,5 @@
 import express, { Request, Response } from 'express'
+import cors from 'cors'
 
 import { getVisits, getSupportWorkers } from './utils'
 import { SupportWorkerVisit } from './types'
@@ -7,6 +8,7 @@ const PORT = 8080
 const app = express()
 
 app.use(express.json())
+app.use(cors())
 
 app.get('/getSupportWorkers', (_req: Request, res: Response) => {
   const supportWorkers = getSupportWorkers()
@@ -60,5 +62,35 @@ app.get(
     }
   }
 )
+
+app.get('/getSupportWorkerVisits', (req: Request, res: Response) => {
+  try {
+    // fetch support workers
+    const supportWorkers = getSupportWorkers()
+    const visits = getVisits()
+
+    // combine support worker and visits
+    const supportWorkerVisits: SupportWorkerVisit[] = supportWorkers.flatMap(
+      (worker) => {
+        // find all visits for this support worker
+        const workerVisits = visits.filter(
+          (visit) => visit.supportWorkerId === worker.supportWorkerId
+        )
+
+        // combine support worker data with each visit
+        return workerVisits.map((visit) => ({
+          ...visit,
+          name: worker.name,
+          contractedHours: worker.contractedHours
+        }))
+      }
+    )
+
+    res.json({ supportWorkerVisits })
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ error: 'Internal server error' })
+  }
+})
 
 app.listen(PORT, () => console.log(`Server listening on port: ${PORT}`))
